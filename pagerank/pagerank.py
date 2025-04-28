@@ -57,8 +57,38 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    #initialize distribution dictionary
+    distribution = {}
 
+     #With probability `1 - damping_factor`, choose a link at random chosen from all pages in the corpus.
+    N = len(corpus)
+    for page_next in corpus:
+        distribution[page_next] = (1 - damping_factor) / N        
+    #With probability `damping_factor`, choose a link at random linked to by `page`
+    page_links = corpus[page]
+    page_links_count = len(page_links)
+    for page_next in page_links:
+        distribution[page_next] += damping_factor / page_links_count
+
+
+    return distribution
+
+
+def test_transition_model():
+    corpus = {
+        "1.html": {"2.html", "3.html"},
+        "2.html": {"3.html"},
+        "3.html": {"2.html"}
+    }
+    page = "1.html"
+    
+    result = transition_model(corpus, page, DAMPING)
+    print(result)
+    assert result == {
+        "1.html": 0.05,
+        "2.html": 0.475,
+        "3.html": 0.475
+    }
 
 def sample_pagerank(corpus, damping_factor, n):
     """
@@ -69,7 +99,25 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+
+    #initialize page rank dictionary
+    page_rank = {}
+    #initialize page rank dictionary
+    for page in corpus:
+        page_rank[page] = 0
+
+    #initialize first page
+    page = random.choice(list(corpus.keys()))
+
+    #iterate n times
+    for i in range(n):
+        #update page rank
+        page_rank[page] += 1 / n
+        #get next page
+        distribution = transition_model(corpus, page, damping_factor)
+        page = random.choices(list(distribution.keys()), weights=distribution.values(), k=1)[0]
+
+    return page_rank
 
 
 def iterate_pagerank(corpus, damping_factor):
