@@ -45,8 +45,11 @@ def get_mask_token_index(mask_token_id, inputs):
     Return the index of the token with the specified `mask_token_id`, or
     `None` if not present in the `inputs`.
     """
-    # TODO: Implement this function
-    raise NotImplementedError
+    # Find the index of the mask token in the input
+    mask_token_index = tf.where(inputs["input_ids"] == mask_token_id)
+    if len(mask_token_index) == 0:
+        return None
+    return mask_token_index[0][1].numpy()
 
 
 
@@ -55,8 +58,15 @@ def get_color_for_attention_score(attention_score):
     Return a tuple of three integers representing a shade of gray for the
     given `attention_score`. Each value should be in the range [0, 255].
     """
-    # TODO: Implement this function
-    raise NotImplementedError
+    #if attension score 0, black (0,0,0)
+    #if attension score 1, white (255,255,255)
+
+    #each mapping from 0 to1 is going to repeat in the tuple
+    #all values must be ints
+
+    #map the score to a value between 0 and 255
+    color_value = int(255 * attention_score)
+    return (color_value, color_value, color_value)
 
 
 
@@ -70,13 +80,12 @@ def visualize_attentions(tokens, attentions):
     include both the layer number (starting count from 1) and head number
     (starting count from 1).
     """
-    # TODO: Update this function to produce diagrams for all layers and heads.
-    generate_diagram(
-        1,
-        1,
-        tokens,
-        attentions[0][0][0]
-    )
+    for i, layer in enumerate(attentions):
+        for k in range(len(layer[0])):
+            layer_num = i + 1
+            head_num = k + 1
+            generate_diagram(layer_num, head_num, tokens, attentions[i][0][k])
+
 
 
 def generate_diagram(layer_number, head_number, tokens, attention_weights):

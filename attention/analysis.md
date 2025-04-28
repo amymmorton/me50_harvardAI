@@ -1,18 +1,18 @@
 # Analysis
 
-## Layer TODO, Head TODO
+## Layer 3 Head 1
 
-TODO
-
-Example Sentences:
-- TODO
-- TODO
-
-## Layer TODO, Head TODO
-
-TODO
+Influenced by the token that directly follows
 
 Example Sentences:
-- TODO
-- TODO
+- I threw a small rock and it fell in the [MASK].
+- I flew a kite in the [MASK].
+
+## Layer 2, Head 5
+
+Verb masks , attention score veryinfluences by word preceeding 
+
+Example Sentences:
+- What shall we [MASK] today?
+- I [MASK] a bike on the sidewalk.
 
