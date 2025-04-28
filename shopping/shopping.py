@@ -48,26 +48,74 @@ def load_data(filename):
         - ExitRates, a floating point number
         - PageValues, a floating point number
         - SpecialDay, a floating point number
-        - Month, an index from 0 (January) to 11 (December)
+    - *req parse* Month, an index from 0 (January) to 11 (December)
         - OperatingSystems, an integer
         - Browser, an integer
         - Region, an integer
         - TrafficType, an integer
-        - VisitorType, an integer 0 (not returning) or 1 (returning)
+    - *req parse* VisitorType, an integer 0 (not returning) or 1 (returning)
         - Weekend, an integer 0 (if false) or 1 (if true)
 
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    raise NotImplementedError
+   
+   
+   # Read data in from file
+    with open(filename) as f:
+        reader = csv.reader(f)
+        header = []
+        for row in reader:
+            for text in row:
+                header.append(text)
+            break #only need the first row
+
+        #next(reader)
+
+        # Initialize lists
+        data = []
+        parseIndex_month = header.index("Month")
+        parseIndex_vt = header.index("VisitorType")
+        parseIndex_wknd = header.index("Weekend")
+
+        shortMonths = ["Jan", "Feb", "Mar", "Apr", "May", "June", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        vType = [ "New_Visitor", "Returning_Visitor", "Other"]
+        wkndType = ["FALSE", "TRUE"]
+
+        #data types
+        data_types = [int, float, int, float, int, float, float, float, float, float, int, int, int, int, int, int, int]
+        for row in reader:
+            direct_cast =  [data_types[ind](cell) for ind, cell in enumerate(row[0:parseIndex_month])]
+            month_cast = shortMonths.index(row[parseIndex_month])
+            direct_cast2 = [data_types[ind+parseIndex_month+1](cell) for ind, cell in enumerate(row[parseIndex_month+1:parseIndex_vt])]
+            visitor_cast = 1 if vType.index(row[parseIndex_vt]) == 1 else 0
+            
+            wknd_cast = wkndType.index(row[parseIndex_wknd])
+
+            data.append({
+                "evidence": direct_cast + [month_cast] + direct_cast2 + [visitor_cast] + [wknd_cast],
+                "label": 1 if row[header.index("Revenue")] == "TRUE" else 0
+            })
+
+    # Extract data into evidence and labels
+    evidence = [row["evidence"] for row in data]
+    labels = [row["label"] for row in data]
+
+    return evidence, labels
+
 
 
 def train_model(evidence, labels):
     """
-    Given a list of evidence lists and a list of labels, return a
+    Given a list of evidence lists 
+    and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+
+    model = KNeighborsClassifier(n_neighbors=1)
+    model.fit(evidence, labels)
+    
+    return model
 
 
 def evaluate(labels, predictions):
@@ -85,7 +133,27 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    true_pos =0
+    pos_labels = 0
+    true_neg =0
+    neg_labels = 0
+    
+    for i in range(len(labels)):
+        if labels[i] == 1:
+            pos_labels += 1 
+            if predictions[i] == 1:
+                true_pos += 1
+        if labels[i] == 0:
+            neg_labels += 1
+            if predictions[i] == 0:
+                true_neg += 1
+
+
+    sensitivity = true_pos / pos_labels
+    specificity = true_neg / neg_labels
+
+    return (sensitivity, specificity)
+    
 
 
 if __name__ == "__main__":
